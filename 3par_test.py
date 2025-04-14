@@ -38,10 +38,12 @@ def wbem_connect(hp_user, hp_password, hp_ip, hp_port, namespace):
 
 def get_classes(wbem_connection):
     """
-    Получает список всех доступных CIM-классов в указанном пространстве имен.
+    Получает список всех доступных CIM-классов в указанном пространстве имен,
+    включая производные классы.
     """
     try:
-        classes = wbem_connection.EnumerateClassNames()
+        # Используем параметр DeepInheritance=True
+        classes = wbem_connection.EnumerateClassNames(DeepInheritance=True)
         hp_logger.info("Successfully retrieved class names.")
         return sorted(classes)  # Возвращаем отсортированный список классов
     except Exception as e:
