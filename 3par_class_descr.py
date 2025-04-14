@@ -85,12 +85,14 @@ def main():
         print(cls)
 
     hp_logger.info("********************************* Class Discovery is ended *********************************")
-
-if __name__ == "__main__":
-    wbem_conn = wbem_connect(args.hp_user, args.hp_password, args.hp_ip, args.hp_port, "root/tpd")
+    
     class_description = get_class_description(wbem_conn, "TPD_FCPortLESBStatistics")
     
     # Выводим свойства класса
     print(f"Properties of TPD_FCPortLESBStatistics:")
     for prop_name, prop in class_description.properties.items():
         print(f"{prop_name}: {prop.type} ({prop.qualifiers})")
+
+if __name__ == "__main__":
+    main()
+    
