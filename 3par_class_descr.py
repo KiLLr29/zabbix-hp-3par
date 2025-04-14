@@ -98,17 +98,17 @@ def main():
 
     hp_logger.info("********************************* Class Discovery is ended *********************************")
     
-    class_description = get_class_description(wbem_conn, "TPD_FCPortSCSIEndpointImplementation")
-    instances = get_instances_of_class(wbem_conn, "TPD_FCPortSCSIEndpointImplementation")
+    class_description = get_class_description(wbem_conn, "TPD_FCPort")
+    instances = get_instances_of_class(wbem_conn, "TPD_FCPort")
     
     # Выводим свойства класса
-    print(f"Properties of TPD_FCPortSCSIEndpointImplementation:")
+    print(f"Properties of TPD_FCPort:")
     for prop_name, prop in class_description.properties.items():
         print(f"{prop_name}: {prop.type} ({prop.qualifiers})")
 
     # Выводим данные экземпляров
     for instance in instances:
-        print(f"Instance of TPD_FCPortSCSIEndpointImplementation:")
+        print(f"Instance of TPD_FCPort:")
         for key, value in instance.items():
             print(f"  {key}: {value}")    
 
