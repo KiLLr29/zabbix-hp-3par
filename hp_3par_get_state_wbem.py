@@ -221,7 +221,7 @@ def get_fc_port_statistics(hp_user, hp_password, hp_ip, hp_port, storage_name):
         fc_port_stats = hp_connect.EnumerateInstances(
             "TPD_FCPortStatistics", 
             PropertyList=["ElementName", "LinkFailures", "LossOfSync", "LossOfSignal", 
-                          "PrimitiveSequenceProtocolError", "InvalidTransmissionWords", "CRC Errors"]
+                          "PrimitiveSequenceProtocolError", "InvalidTransmissionWords"]
         )
         
         for port in fc_port_stats:
