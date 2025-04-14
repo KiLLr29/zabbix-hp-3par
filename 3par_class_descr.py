@@ -50,6 +50,18 @@ def get_classes(wbem_connection):
         hp_logger.error(f"Error retrieving class names: {e}")
         sys.exit("1000")
 
+def get_instances_of_class(wbem_connection, class_name):
+    """
+    Получает все экземпляры указанного CIM-класса.
+    """
+    try:
+        instances = wbem_connection.EnumerateInstances(class_name)
+        hp_logger.info(f"Successfully retrieved instances for {class_name}")
+        return instances
+    except Exception as e:
+        hp_logger.error(f"Error retrieving instances: {e}")
+        sys.exit("1000")
+
 def get_class_description(wbem_connection, class_name):
     """
     Получает описание CIM-класса.
@@ -87,11 +99,18 @@ def main():
     hp_logger.info("********************************* Class Discovery is ended *********************************")
     
     class_description = get_class_description(wbem_conn, "TPD_FCPortLESBStatistics")
+    instances = get_instances_of_class(wbem_conn, "TPD_FCPortLESBStatistics")
     
     # Выводим свойства класса
     print(f"Properties of TPD_FCPortLESBStatistics:")
     for prop_name, prop in class_description.properties.items():
         print(f"{prop_name}: {prop.type} ({prop.qualifiers})")
+
+    # Выводим данные экземпляров
+    for instance in instances:
+        print(f"Instance of TPD_FCPortLESBStatistics:")
+        for key, value in instance.items():
+            print(f"  {key}: {value}")    
 
 if __name__ == "__main__":
     main()
