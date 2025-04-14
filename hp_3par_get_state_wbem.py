@@ -16,7 +16,7 @@ import paramiko
 
 
 # Создаем лог-объект
-LOG_FILENAME = "/tmp/hp_3par_state.log"
+LOG_FILENAME = "/tmp/hp_3par_state_debug.log"
 # Берем аргумент содержащий имя СХД и выполняем срез
 STORAGE_NAME = sys.argv[5][15:]
 hp_logger = logging.getLogger("hp_3par_logger")
@@ -211,6 +211,36 @@ def discovering_resources(hp_user, hp_password, hp_ip, hp_port, storage_name, li
 
 	return send_data_to_zabbix(xer, storage_name)
 
+def get_fc_port_statistics(hp_user, hp_password, hp_ip, hp_port, storage_name):
+    hp_connect = hp_wbem_connect(hp_user, hp_password, hp_ip, hp_port)
+    fc_stats = []
+    timestamp = int(time.time())
+    
+    try:
+        # Предполагая, что статистика доступна в TPD_FCPortStatistics
+        fc_port_stats = hp_connect.EnumerateInstances(
+            "TPD_FCPortStatistics", 
+            PropertyList=["ElementName", "LinkFailures", "LossOfSync", "LossOfSignal", 
+                          "PrimitiveSequenceProtocolError", "InvalidTransmissionWords", "CRC Errors"]
+        )
+        
+        for port in fc_port_stats:
+            stats = [
+                f"{storage_name} fc.linkfail.[{port['ElementName']}] {timestamp} {port['LinkFailures']}",
+                f"{storage_name} fc.lossync.[{port['ElementName']}] {timestamp} {port['LossOfSync']}",
+                f"{storage_name} fc.lossig.[{port['ElementName']}] {timestamp} {port['LossOfSignal']}",
+                f"{storage_name} fc.primseq.[{port['ElementName']}] {timestamp} {port['PrimitiveSequenceProtocolError']}",
+                f"{storage_name} fc.invword.[{port['ElementName']}] {timestamp} {port['InvalidTransmissionWords']}",
+                f"{storage_name} fc.invcrc.[{port['ElementName']}] {timestamp} {port['CRC Errors']}"
+            ]
+            fc_stats.extend(stats)
+            
+    except Exception as e:
+        hp_logger.error(f"Error collecting FC port statistics: {e}")
+        sys.exit("1000")
+        
+    return fc_stats, storage_name
+
 
 
 def get_status_resources(hp_user, hp_password, hp_ip, hp_port, storage_name, list_CIM_classes):
@@ -356,6 +386,14 @@ def main():
 		print(result_status)
 	elif arguments.psu:
 		result_status = discovery_psu(arguments.hp_user, arguments.hp_password, arguments.hp_ip, arguments.hp_port, arguments.storage_name)
+	elif arguments.fcstats:
+		hp_logger.info("********************************* Get FC Stats is starting *********************************")
+		result_fcstats = get_fc_port_statistics(arguments.hp_user, arguments.hp_password, arguments.hp_ip, arguments.hp_port, arguments.storage_name)
+		hp_logger.info("********************************* Get FC Stats is ended *********************************")
+		# Выводим результат в консоль вместо отправки в Zabbix
+		print("Collected FC Statistics:")
+		for stat in result_fcstats:
+			print(stat)
 
 
 if __name__ == "__main__":
