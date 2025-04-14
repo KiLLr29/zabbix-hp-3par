@@ -362,6 +362,7 @@ def main():
 	group.add_argument('--status', action='store_true')
 	group.add_argument('--overprovisioning', action='store_true')
 	group.add_argument('--psu', action='store_true')
+	group.add_argument('--fcstats', action='store_true')
 	arguments = hp_parser.parse_args()
 
 
