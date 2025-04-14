@@ -82,6 +82,7 @@ def main():
     parser.add_argument('--hp_user', action="store", required=True, help="Username for WBEM connection")
     parser.add_argument('--hp_password', action="store", required=True, help="Password for WBEM connection")
     parser.add_argument('--namespace', action="store", default="root/tpd", help="Namespace to query (default: root/tpd)")
+    parser.add_argument('--class_name', action="store", default="TPD_FCPor", help="CIM class name to inspect (default: TPD_FCPort)")
     args = parser.parse_args()
 
     # Подключение к WBEM
@@ -98,20 +99,26 @@ def main():
 
     hp_logger.info("********************************* Class Discovery is ended *********************************")
     
-    class_description = get_class_description(wbem_conn, "TPD_FCPortLESBElementStatisticalData")
-    instances = get_instances_of_class(wbem_conn, "TPD_FCPortLESBElementStatisticalData")
-    
-    # Выводим свойства класса
-    print(f"Properties of TPD_FCPortLESBElementStatisticalData:")
+    # Исследование указанного класса
+    class_name = args.class_name
+    if class_name not in classes:
+        hp_logger.error(f"Class '{class_name}' not found in namespace '{args.namespace}'.")
+        sys.exit("1001")
+
+    # Получение описания класса
+    class_description = get_class_description(wbem_conn, class_name)
+    print(f"\nProperties of {class_name}:")
     for prop_name, prop in class_description.properties.items():
         print(f"{prop_name}: {prop.type} ({prop.qualifiers})")
 
-    # Выводим данные экземпляров
+    # Получение экземпляров класса
+    instances = get_instances_of_class(wbem_conn, class_name)
+    print(f"\nInstances of {class_name}:")
     for instance in instances:
-        print(f"Instance of TPD_FCPortLESBElementStatisticalData:")
+        print(f"Instance of {class_name}:")
         for key, value in instance.items():
-            print(f"  {key}: {value}")    
+            print(f"  {key}: {value}")
 
 if __name__ == "__main__":
-    main()
+    main()   
     
